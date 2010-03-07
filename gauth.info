@@ -1,0 +1,6 @@
+; $Id$
+name = Google Auth
+description = "Google Authentication module - uses OAuth"
+core = 6.x
+dependencies[] = oauth_common
+
