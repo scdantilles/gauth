@@ -18,7 +18,7 @@ function gauth_menu() {
   $items = array();
 
   $items['admin/settings/gauth'] = array(
-    'title' => 'NextAgenda Google Auth',
+    'title' => 'Google Auth',
     'description' => 'Google Authentication settings',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('gauth_settings_form'),
@@ -28,7 +28,7 @@ function gauth_menu() {
   );
 
   $items['gauth-token'] = array(
-    'title' => 'NextAgenda Google Auth Token',
+    'title' => 'Google Auth Token',
     'description' => 'Google Authentication callback',
     'page callback' => 'gauth_access_token',
     'access callback' => 'user_access',
