@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Uses HMAC-SHA1 as the signature method.
 

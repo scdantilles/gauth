@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * General settings configuration form.
