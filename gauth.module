@@ -121,10 +121,10 @@ function gauth_response_handler($account_id = NULL) {
     drupal_set_message(t("Can't authenticate with google as library is missing check Status report or Readme for requirements"), 'error');
     return FALSE;
   }
-  if ($account_id == NULL) {
+  if ($account_id == NULL && isset($_SESSION['gauth_account_id'])) {
     $account_id = $_SESSION['gauth_account_id'];
   }
-  else {
+  else if ($account_id) {
     $_SESSION['gauth_account_id'] = $account_id;
   }
   if ($account_id) {
@@ -149,9 +149,13 @@ function gauth_response_handler($account_id = NULL) {
       drupal_goto('admin/config/services/gauth_account');
       drupal_set_message(t('Api Account saved'));
     }
-    $auth_url = $client->createAuthUrl();
-    drupal_goto($auth_url);
+    if ($client) {
+      $auth_url = $client->createAuthUrl();
+      drupal_goto($auth_url);
+    }
   }
+  // Let other modules act of google response.
+  module_invoke_all('gauth_google_response');
 }
 
 /**
@@ -340,6 +344,11 @@ function gauth_account_save(&$account) {
       }
       $fields['is_authenticated'] = $is_authenticated;
     }
+    // Let other modules modify the account before saving existing account.
+    foreach (module_implements('gauth_account_update') as $module) {
+      $function = $module . '_gauth_account_update';
+      $function($fields, gauth_account_load($fields['id'], FALSE));
+    }
     if (drupal_write_record('gauth_accounts', $fields, 'id') == SAVED_UPDATED) {
       return $fields;
     }
@@ -375,6 +384,8 @@ function gauth_account_save(&$account) {
     if (in_array($account['name'], $accounts)) {
       return array('is_error' => TRUE, 'message' => 'Name is already in use. Please choose a unique name for the account');
     }
+    // Let other modules modify the account before saving new account.
+    module_invoke_all('gauth_account_insert', $fields);
     if (drupal_write_record('gauth_accounts', $fields) == SAVED_NEW) {
       return $fields;
     }
@@ -399,6 +410,8 @@ function gauth_account_delete($account_id, $by_name = TRUE) {
   else {
     $filter = 'id';
   }
+  // Let other modules perform delete for associated data if any.
+  module_invoke_all('gauth_account_delete', gauth_account_load($account_id, $by_name));
   return db_delete("gauth_accounts")
     ->condition($filter, $account_id, '=')
     ->execute();
