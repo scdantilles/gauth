@@ -110,6 +110,16 @@ function gauth_libraries_info() {
 }
 
 /**
+ * Implements hook_user_delete().
+ */
+function gauth_user_delete($user) {
+  $gauth_account = gauth_account_load_by_uid($user->uid);
+  if ($gauth_account) {
+    gauth_account_delete($gauth_account);
+  }
+}
+
+/**
  * Function to handle authentication and response from google.
  *
  * @param string $account_id
@@ -124,7 +134,7 @@ function gauth_response_handler($account_id = NULL) {
   if ($account_id == NULL && isset($_SESSION['gauth_account_id'])) {
     $account_id = $_SESSION['gauth_account_id'];
   }
-  else if ($account_id) {
+  elseif ($account_id) {
     $_SESSION['gauth_account_id'] = $account_id;
   }
   if ($account_id) {
@@ -146,7 +156,12 @@ function gauth_response_handler($account_id = NULL) {
       $account['access_token'] = $client->getAccessToken();
       gauth_account_save($account);
       unset($_SESSION['gauth_account_id']);
-      drupal_goto('admin/config/services/gauth_account');
+      if (!user_access('administer site configuration') && module_exists('gauth_user')) {
+        drupal_goto('user/' . $GLOBALS['user']->uid . '/gauth');
+      }
+      else {
+        drupal_goto('admin/config/services/gauth_account');
+      }
       drupal_set_message(t('Api Account saved'));
     }
     if ($client) {
@@ -243,7 +258,7 @@ function gauth_google_services_names($services = FALSE) {
   else {
     $service_names = array();
     foreach (explode(",", $services) as $service) {
-      $service_names[$service] = $names[$service];
+      $service_names[trim($service)] = $names[$service];
     }
     return $service_names;
   }
@@ -303,8 +318,9 @@ function gauth_account_load($account_id = NULL, $by_name = TRUE, $fields = 'gaut
  * Same account array reflects the changes
  */
 function gauth_account_save(&$account) {
+  global $user;
   if (isset($account['id'])) {
-    $fields = array('id' => $account['id']);
+    $fields = array('id' => $account['id'], 'uid' => isset($account['uid']) ? $account['uid'] : $user->uid);
     if (isset($_SESSION['gauth_account_id']) && isset($account['access_token']) && $_SESSION['gauth_account_id'] == $account['id']) {
       $fields['access_token'] = $account['access_token'];
       $fields['is_authenticated'] = TRUE;
@@ -374,6 +390,7 @@ function gauth_account_save(&$account) {
       'developer_key' => check_plain($account['developer_key']),
       'client_id' => check_plain($account['client_id']),
       'client_secret' => check_plain($account['client_secret']),
+      'uid' => $user->uid,
     );
     if (is_array($account['services'])) {
       $account['services'] = implode(",", $account['services']);
@@ -506,3 +523,15 @@ function gauth_account_revoke_token($account_id, $by_name = TRUE) {
     return FALSE;
   }
 }
+
+/**
+ * Function loads gauth account id by user id.
+ */
+function gauth_account_load_by_uid($uid) {
+  return db_select('gauth_accounts')
+    ->fields('gauth_accounts', array('name'))
+      ->condition('uid', $uid, '=')
+      ->execute()
+      ->fetchField();
+}
+

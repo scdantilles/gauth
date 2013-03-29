@@ -58,6 +58,13 @@ function gauth_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The users uid of the user who created the gauth account.',
+      ),
     ),
     'primary key' => array('id'),
     'unique keys' => array(
@@ -107,4 +114,22 @@ function gauth_requirements($phase) {
     }
   }
   return $requirements;
+}
+
+/**
+ * Add the gauth_accounts.uid field.
+ */
+function gauth_update_7002() {
+  $field = array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => 'The {users}.uid of the user who created the redirect.',
+  );
+  db_add_field('gauth_accounts', 'uid', $field);
+
+  db_update('gauth_accounts')
+    ->fields(array('uid' => 1))
+    ->execute();
 }

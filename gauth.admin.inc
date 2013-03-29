@@ -8,12 +8,13 @@
  * Menu callback; Listing of all current Api accounts.
  */
 function gauth_account_list() {
-  $page = array();
-  $accounts = gauth_account_load(NULL, FALSE);
-  $page['gauth_account_list'] = array(
-    '#markup' => theme('gauth_account_list', array('accounts' => $accounts)),
-  );
-  return $page;
+  $query = db_select('gauth_accounts', 'ga')->extend('PagerDefault');
+  $query->fields('ga');
+
+  $accounts = $query
+    ->limit(25)
+    ->execute();
+  return theme('gauth_account_list', array('accounts' => $accounts));
 }
 
 /**
@@ -34,16 +35,19 @@ function theme_gauth_account_list($variables) {
     t('Api key'),
     t('Client Id'),
     t('Client Secret'),
+    t('User'),
     t('Services'),
     array('data' => t('Operations'), 'colspan' => 3),
   );
   $rows = array();
   foreach ($accounts as $account) {
+    $account_user = user_load($account->uid);
     $row = array();
     $row[] = $account->name;
     $row[] = $account->developer_key;
     $row[] = $account->client_id;
     $row[] = $account->client_secret;
+    $row[] = l($account_user->name, "user/$account->uid");
     $row[] = implode(", ", gauth_google_services_names($account->services));
     $row[] = l(t('edit'), 'admin/config/services/gauth_account/edit/' . $account->id);
     $row[] = l(t('delete'), 'admin/config/services/gauth_account/delete/' . $account->id);
@@ -59,7 +63,15 @@ function theme_gauth_account_list($variables) {
     );
   }
 
-  return theme('table', array('header' => $header, 'rows' => $rows));
+  $build['pager_table'] = array(
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
+  );
+
+  $build['pager_pager'] = array('#theme' => 'pager');
+
+  return $build;
 }
 
 /**
@@ -120,6 +132,9 @@ function gauth_account_edit_form($form, &$form_state, $id = NULL) {
     '#multiple' => TRUE,
     '#default_value' => isset($account['services']) ? explode(",", $account['services']) : array(),
     '#required' => TRUE,
+  );
+  $form['uid'] = array(
+    '#type' => 'value',
   );
   $form['submit'] = array(
     '#type' => 'submit',
