@@ -60,6 +60,7 @@ function gauth_menu() {
   $items['gauth/response_handler'] = array(
     'page callback' => 'gauth_response_handler',
     'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
   );
   $items['gauth/revoke_token/%'] = array(
     'title' => 'Google Account Token Revoke',
