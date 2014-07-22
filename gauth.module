@@ -88,21 +88,23 @@ function gauth_theme() {
  * Implements hook_libraries_info().
  */
 function gauth_libraries_info() {
+  $path = libraries_get_path('google-api-php-client');
+  set_include_path($path."/src/" . PATH_SEPARATOR . get_include_path());
   $libraries['google-api-php-client'] = array(
-    'title' => 'Google OAuth2 Library',
+    'name' => 'Google OAuth2 Library',
     'vendor url' => 'http://code.google.com/p/google-api-php-client',
-    'download url' => 'http://code.google.com/p/google-api-php-client/downloads/list',
+    'download url' => 'http://github.com/google/google-api-php-client/archive/master.zip',
     'version arguments' => array(
-      'file' => 'src/io/Google_HttpRequest.php',
-      'pattern' => '/USER_AGENT_SUFFIX = "+(google-api-php-client\/\d\.\d\.\d)+";/',
-      'lines' => 27,
+      'file' => 'src/Google/Client.php',
+      'pattern' => '/LIBVER = "([0-9\.a-z]+)/',
+      'lines' => 40,
     ),
     'versions' => array(
-      'google-api-php-client/0.6.0' => array(),
+      '1.0.5-beta' => array(),
     ),
     'files' => array(
       'php' => array(
-        'src/Google_Client.php',
+        'src/Google/Client.php',
       ),
     ),
   );
