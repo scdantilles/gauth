@@ -59,7 +59,7 @@ function gauth_login_gauth_google_response() {
       $client->setApplicationName("Google OAuth2");
       $client->setClientId($client_id);
       $client->setClientSecret($client_secret);
-      $client->setRedirectUri($GLOBALS['base_url'] . "/gauth/response_handler");
+      $client->setRedirectUri(url('gauth/response_handler', array('https' => TRUE, 'absolute' => TRUE)));
       $client->setDeveloperKey($api_key);
       $client->addService('oauth2', 'v2');
       $client->authenticate($_GET['code']);
@@ -69,7 +69,7 @@ function gauth_login_gauth_google_response() {
       $client->setApplicationName("Google OAuth2");
       $client->setClientId($client_id);
       $client->setClientSecret($client_secret);
-      $client->setRedirectUri($GLOBALS['base_url'] . "/gauth/response_handler");
+      $client->setRedirectUri(url('gauth/response_handler', array('https' => TRUE, 'absolute' => TRUE)));
       $client->setDeveloperKey($api_key);
       $client->setAccessToken($account['access_token']);
       $client->addService('oauth2', 'v2');
@@ -142,7 +142,7 @@ function gauth_login_user_login_submit() {
     $client->setApplicationName("Google OAuth2");
     $client->setClientId(variable_get('gauth_login_client_id'));
     $client->setClientSecret(variable_get('gauth_login_client_secret'));
-    $client->setRedirectUri($GLOBALS['base_url'] . "/gauth/response_handler");
+    $client->setRedirectUri(url('gauth/response_handler', array('https' => TRUE, 'absolute' => TRUE)));
     $client->setDeveloperKey(variable_get('gauth_login_developer_key'));
     $client->addService('oauth2', 'v2');
     if (!isset($_SESSION['gauth_login_state'])) {
@@ -153,7 +153,7 @@ function gauth_login_user_login_submit() {
     }
     $_SESSION['gauth_login_state'] = $state;
     $client->setState($state);
-    $url = 'https://accounts.google.com/o/oauth2/auth?response_type=code&redirect_uri=' . $GLOBALS['base_url'] . '/gauth/response_handler&client_id=' . variable_get('gauth_login_client_id') . '&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&access_type=offline&state=' . $_SESSION['gauth_login_state'];
+    $url = 'https://accounts.google.com/o/oauth2/auth?response_type=code&redirect_uri=' . url('gauth/response_handler', array('https' => TRUE, 'absolute' => TRUE)) . '&client_id=' . variable_get('gauth_login_client_id') . '&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&access_type=offline&state=' . $_SESSION['gauth_login_state'];
     if (isset($_GET['destination'])) {
       unset($_GET['destination']);
     }
