@@ -157,7 +157,7 @@ function gauth_response_handler($account_id = NULL) {
       $client->setApplicationName("Google OAuth2");
       $client->setClientId($account['client_id']);
       $client->setClientSecret($account['client_secret']);
-      $client->setRedirectUri($GLOBALS['base_url'] . "/gauth/response_handler");
+      $client->setRedirectUri(url('gauth/response_handler', array('https' => TRUE, 'absolute' => TRUE)));
       $client->setDeveloperKey($account['developer_key']);
       $scopes = gauth_google_services_scopes();
       foreach (explode(",", $account['services']) as $service) {
@@ -521,7 +521,7 @@ function gauth_client_get($account_id = NULL, $by_name = TRUE) {
     $client->setDeveloperKey($account['developer_key']);
   }
   $client->setApplicationName("Google OAuth2");
-  $client->setRedirectUri($GLOBALS['base_url'] . "/gauth/response_handler");
+  $client->setRedirectUri(url('gauth/response_handler', array('https' => TRUE, 'absolute' => TRUE)));
   return $client;
 }
 
