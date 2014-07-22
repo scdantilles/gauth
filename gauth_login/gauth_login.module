@@ -86,12 +86,14 @@ function gauth_login_gauth_google_response() {
         $account['services'] = 'oauth2';
         $account['is_authenticated'] = TRUE;
 
-        $user = new stdClass();
-        $user->mail = $info['email'];
-        $user->name = user_load_by_name($info['name']) ? $info['name'] . time() : $info['name'];
-        $user->is_new = TRUE;
-        $user->status = 1;
-        $new_user = user_save($user);
+        if (!$new_user = gauth_login_find_existing_user($info)) {
+          $user = new stdClass();
+          $user->mail = $info['email'];
+          $user->name = user_load_by_name($info['name']) ? $info['name'] . time() : $info['name'];
+          $user->is_new = TRUE;
+          $user->status = 1;
+          $new_user = user_save($user);
+        }
         $form_state['uid'] = $new_user->uid;
         user_login_submit(array(), $form_state);
         global $user;
@@ -110,6 +112,29 @@ function gauth_login_gauth_google_response() {
     }
   }
   drupal_goto();
+}
+
+/**
+ * Finds an existing user based on info from Google.
+ *
+ * @param array $info
+ *   The 'userinfo' array from OAuth.
+ *
+ * @return object|NULL
+ *   An existing Drupal user object if found; otherwise NULL.
+ */
+function gauth_login_find_existing_user($info) {
+  // First, see if there is a user with the given e-mail.
+  if ($new_user = user_load_by_mail($info['email'])) {
+    return $new_user;
+  }
+
+  // Next, see if any modules have another way of tracking down existing users.
+  foreach (module_implements('gauth_login_find_existing_user') as $module) {
+    if ($new_user = module_invoke($module, 'gauth_login_find_existing_user', $info)) {
+      return $new_user;
+    }
+  }
 }
 
 /**
