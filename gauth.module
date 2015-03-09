@@ -159,6 +159,9 @@ function gauth_response_handler($account_id = NULL) {
       $client->setClientSecret($account['client_secret']);
       $client->setRedirectUri(url('gauth/response_handler', array('https' => TRUE, 'absolute' => TRUE)));
       $client->setDeveloperKey($account['developer_key']);
+      if ( $account['access_type'] ) {
+        $client->setAccessType('offline');
+      }
       $scopes = gauth_google_services_scopes();
       foreach (explode(",", $account['services']) as $service) {
         $client->addScope($scopes[$service]);
@@ -401,6 +404,9 @@ function gauth_account_save(&$account) {
           $is_authenticated = FALSE;
         }
       }
+      if (isset($account['access_type'])) {
+        $fields['access_type'] = intval($account['access_type']);
+      }
       $fields['is_authenticated'] = $is_authenticated;
     }
     // Let other modules modify the account before saving existing account.
@@ -433,6 +439,7 @@ function gauth_account_save(&$account) {
       'developer_key' => check_plain($account['developer_key']),
       'client_id' => check_plain($account['client_id']),
       'client_secret' => check_plain($account['client_secret']),
+      'access_type' => $account['access_type'],
       'uid' => $user->uid,
     );
     if (is_array($account['services'])) {
@@ -519,6 +526,9 @@ function gauth_client_get($account_id = NULL, $by_name = TRUE) {
     $client->setAccessToken($account['access_token']);
     $client->setClientSecret($account['client_secret']);
     $client->setDeveloperKey($account['developer_key']);
+    if ($account['access_type']) {
+      $client->setAccessType('offline');
+    }
   }
   $client->setApplicationName("Google OAuth2");
   $client->setRedirectUri(url('gauth/response_handler', array('https' => TRUE, 'absolute' => TRUE)));

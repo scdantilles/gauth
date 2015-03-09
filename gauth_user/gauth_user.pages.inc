@@ -60,6 +60,7 @@ function gauth_user_services_user_account_create($type) {
     'client_secret' => $account['client_secret'],
     'developer_key' => $account['developer_key'],
     'services' => $account['services'],
+    'access_type' => $account['access_type'],
     'name' => $type . '|' . $GLOBALS['user']->uid,
   );
   gauth_account_save($gauth_account);

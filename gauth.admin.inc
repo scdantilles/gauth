@@ -37,6 +37,7 @@ function theme_gauth_account_list($variables) {
     t('Client Secret'),
     t('User'),
     t('Services'),
+    t('Access type'),
     array('data' => t('Operations'), 'colspan' => 3),
   );
   $rows = array();
@@ -49,6 +50,7 @@ function theme_gauth_account_list($variables) {
     $row[] = $account->client_secret;
     $row[] = l($account_user->name, "user/$account->uid");
     $row[] = implode(", ", gauth_google_services_names($account->services));
+    $row[] = $account->access_type ? 'Offline' : 'Online';
     $row[] = l(t('edit'), 'admin/config/services/gauth_account/edit/' . $account->id);
     $row[] = l(t('delete'), 'admin/config/services/gauth_account/delete/' . $account->id);
     $row[] = $account->is_authenticated ? l(t('Revoke'), 'gauth/revoke_token/' . $account->id) : l(t('Authenticate'), 'gauth/response_handler/' . $account->id);
@@ -132,6 +134,12 @@ function gauth_account_edit_form($form, &$form_state, $id = NULL) {
     '#multiple' => TRUE,
     '#default_value' => isset($account['services']) ? explode(",", $account['services']) : array(),
     '#required' => TRUE,
+  );
+  $form['access_type'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Offline mode'),
+    '#description' => t('Check this box to allow the application to use refresh tokens when the user is not present.'),
+    '#default_value' => isset($account['access_type']) ? $account['access_type'] : 0,
   );
   $form['uid'] = array(
     '#type' => 'value',

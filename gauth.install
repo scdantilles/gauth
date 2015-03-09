@@ -48,6 +48,12 @@ function gauth_schema() {
         'description' => 'The OAuth account is used for which services.',
         'type' => 'text',
       ),
+      'access_type' => array(
+        'description' => '',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'access_token' => array(
         'description' => 'The OAuth access token.',
         'type' => 'text',
@@ -131,5 +137,23 @@ function gauth_update_7002() {
 
   db_update('gauth_accounts')
     ->fields(array('uid' => 1))
+    ->execute();
+}
+
+/**
+ * Add the gauth_accounts.access_type field.
+ */
+function gauth_update_7003() {
+  $field = array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => 'Specifies if the account should have offline access capabilities.',
+  );
+  db_add_field('gauth_accounts', 'access_type', $field);
+
+  db_update('gauth_accounts')
+    ->fields(array('access_type' => 0))
     ->execute();
 }
